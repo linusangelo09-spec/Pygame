@@ -50,6 +50,14 @@ special_enemy_direction = 1
 special_enemy_drop = 25
 special_enemies_health = 2
 
+# Boss Enemy
+boss_width = 50
+boss_height = 30
+boss_speed = 1
+boss_health = 5
+bosses = []
+boss_drop = 25
+boss_health = 50
 
 
 # Create enemies in a grid similar to Galaga
@@ -92,9 +100,27 @@ def spawnSpecialEnemy():
             special_enemy_y = y_padding + row * y_spacing
             special_enemies.append([special_enemy_x, special_enemy_y])
 
+def spawnBoss():
+    global boss_speed
+    global boss_health
+
+    for row in range(rows):
+        if level >= 2:
+            boss_speed += 1
+            boss_width -= 1
+
+            
+            
+        for col in range(cols):
+            boss_x = x_padding + col * x_spacing
+            boss_y = y_padding + row * y_spacing
+            bosses.append([boss_x, boss_y])
+
 
 spawnEnemy()
-#spawnSpecialEnemy()
+spawnSpecialEnemy()
+spawnBoss()
+
 # Game loop
 while True:
     for event in pygame.event.get():
