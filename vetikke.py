@@ -32,13 +32,25 @@ bullet_height = 10
 bullet_speed = 8
 bullets = []
 
-# Enemies
+# Normal Enemies
 enemies_width = 25
 enemies_height = 15
 enemies_speed = 3
 enemies = []
 enemy_direction = 1
 enemy_drop = 20
+enemies_health = 1
+
+# Special Enemies
+special_enemies_width = 30
+special_enemies_height = 20
+special_enemies_speed = 2
+special_enemies = []
+special_enemy_direction = 1
+special_enemy_drop = 25
+special_enemies_health = 2
+
+
 
 # Create enemies in a grid similar to Galaga
 rows = 3
@@ -64,7 +76,25 @@ def spawnEnemy():
             enemy_y = y_padding + row * y_spacing
             enemies.append([enemy_x, enemy_y])
 
+def spawnSpecialEnemy():
+    global special_enemies_speed
+    global special_enemies_width
+
+    for row in range(rows):
+        if level >= 2:
+            special_enemies_speed += 1
+            special_enemies_width -= 1
+
+            
+            
+        for col in range(cols):
+            special_enemy_x = x_padding + col * x_spacing
+            special_enemy_y = y_padding + row * y_spacing
+            special_enemies.append([special_enemy_x, special_enemy_y])
+
+
 spawnEnemy()
+#spawnSpecialEnemy()
 # Game loop
 while True:
     for event in pygame.event.get():
@@ -183,6 +213,9 @@ while True:
 
         for enemy in enemies:
             pygame.draw.rect(screen, (200, 180, 0), (enemy[0], enemy[1], enemies_width, enemies_height))
+
+        for special_enemy in special_enemies:
+            pygame.draw.rect(screen, (255, 0, 0), (special_enemy[0], special_enemy[1], special_enemies_width, special_enemies_height))
 
         pygame.draw.rect(screen, (0, 200, 255), (player_x, player_y, player_size, player_size))
 
