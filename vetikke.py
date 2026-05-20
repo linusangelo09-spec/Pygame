@@ -112,8 +112,6 @@ def spawnBoss():
         if level >= 2:
             boss_speed += 1
             boss_width -= 1
-
-            
             
         for col in range(cols):
             boss_x = x_padding + col * x_spacing
