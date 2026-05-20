@@ -237,7 +237,7 @@ while True:
                     special_enemy[2] -= bullet_damage
                     if special_enemy[2] <= 0:
                         special_enemies.remove(special_enemy)
-                    enemies_speed *= 1.02
+                        enemies_speed *= 1.02
                     if bullet in bullets:
                         bullets.remove(bullet)
                     hit = True
@@ -252,7 +252,7 @@ while True:
                     enemy[2] -= bullet_damage
                     if enemy[2] <= 0:
                         enemies.remove(enemy)
-                    enemies_speed *= 1.02  # Increase speed slightly with each hit based on current speed
+                        enemies_speed *= 1.02  # Increase speed slightly when enemy dies
                     if bullet in bullets:
                         bullets.remove(bullet)
                     break
@@ -263,7 +263,7 @@ while True:
                     boss[2] -= bullet_damage
                     if boss[2] <= 0:
                         bosses.remove(boss)
-                    boss_speed *= 1.02  # Increase speed slightly with each hit based on current speed
+                        boss_speed *= 1.02  # Increase speed slightly when boss dies
                     if bullet in bullets:
                         bullets.remove(bullet)
                     break
