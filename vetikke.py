@@ -127,7 +127,7 @@ def spawnEnemy():
     global enemies_width
     global special_enemies_speed
 
-    if level == 1 or level == 10:
+    if level == 5 or level == 10:
         boss_x = (Width - bosses_width) // 2
         boss_y = y_padding
         bosses.clear()
