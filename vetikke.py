@@ -96,6 +96,8 @@ boss_health = 67
 boss_maxhealth = 67
 bosses = []
 boss_drop = 25
+boss_color = (255, 0, 0)
+boss_hit_timer = 0
 
 
 
@@ -129,7 +131,7 @@ def spawnEnemy():
         boss_x = (Width - bosses_width) // 2
         boss_y = y_padding
         bosses.clear()
-        bosses.append([boss_x, boss_y, boss_health])
+        bosses.append([boss_x, boss_y, boss_health, 0])
         return
 
     for row in range(rows):
@@ -174,7 +176,7 @@ def spawnBoss():
         for col in range(cols):
             boss_x = x_padding + col * x_spacing
             boss_y = y_padding + row * y_spacing
-            bosses.append([boss_x, boss_y, boss_health])
+            bosses.append([boss_x, boss_y, boss_health, 0])
 
 # Game loop
 while True:
@@ -275,6 +277,7 @@ while True:
                 boss_rect = pygame.Rect(boss[0], boss[1], bosses_width, bosses_height)
                 if boss[2] > 0 and bullet_rect.colliderect(boss_rect):
                     boss[2] -= bullet_damage
+                    boss[3] = 8
                     if boss[2] <= 0:
                         bosses.remove(boss)
                         boss_speed *= 1.02  # Increase speed slightly when boss dies
@@ -347,6 +350,11 @@ while True:
             level += 1
             bullets.clear()
             spawnEnemy()
+        
+        # Update boss hit timers
+        for boss in bosses:
+            if boss[3] > 0:
+                boss[3] -= 1
 
         # Key presses
         keys = pygame.key.get_pressed()
@@ -397,8 +405,12 @@ while True:
             for special_enemy in special_enemies:
                 pygame.draw.rect(screen, (255, 0, 0), (special_enemy[0], special_enemy[1], special_enemies_width, special_enemies_height))
             for boss in bosses:
-                pygame.draw.rect(screen, (255, 0, 0), (boss[0], boss[1], bosses_width, bosses_height))
+                current_color = (255, 100, 100) if boss[3] > 0 else (255, 0, 0)
+                pygame.draw.rect(screen, current_color, (boss[0], boss[1], bosses_width, bosses_height))
                 draw_boss_health_bar(boss, screen)
+
+            level_text = font.render("Level: " + str(level), True, (255, 255, 255))
+            screen.blit(level_text, (10, 10))
 
             pygame.draw.rect(screen, (0, 200, 255), (player_x, player_y, player_size, player_size))
 
