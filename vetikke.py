@@ -93,6 +93,7 @@ bosses_width = 140
 bosses_height = 100
 boss_speed = 5
 boss_health = 67
+boss_maxhealth = 67
 bosses = []
 boss_drop = 25
 
@@ -105,6 +106,19 @@ x_spacing = 40
 y_spacing = 40
 x_padding = (Width - ((cols - 1) * x_spacing + enemies_width)) // 2
 y_padding = 40
+
+
+def draw_boss_health_bar(boss, surface):
+    hp = boss[2]
+    ratio = max(0.0, min(hp / boss_maxhealth, 1.0))
+    bar_width = bosses_width
+    bar_height = 8
+    bar_x = boss[0]
+    bar_y = boss[1] - 12
+
+    pygame.draw.rect(surface, (120, 0, 0), (bar_x, bar_y, bar_width, bar_height))
+    pygame.draw.rect(surface, (0, 200, 0), (bar_x, bar_y, bar_width * ratio, bar_height))
+    pygame.draw.rect(surface, (255, 255, 255), (bar_x, bar_y, bar_width, bar_height), 1)
 
 def spawnEnemy():
     global enemies_speed
@@ -384,6 +398,7 @@ while True:
                 pygame.draw.rect(screen, (255, 0, 0), (special_enemy[0], special_enemy[1], special_enemies_width, special_enemies_height))
             for boss in bosses:
                 pygame.draw.rect(screen, (255, 0, 0), (boss[0], boss[1], bosses_width, bosses_height))
+                draw_boss_health_bar(boss, screen)
 
             pygame.draw.rect(screen, (0, 200, 255), (player_x, player_y, player_size, player_size))
 
