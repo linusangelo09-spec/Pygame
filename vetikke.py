@@ -4,6 +4,23 @@ import math
 
 
 pygame.init()
+try:
+    pygame.mixer.init()
+except Exception:
+    pass
+
+# Music
+music_loaded = False
+music_playing = False
+music_paths = ["Assets/Bad Piggies Theme - Ilmari Hakkola.mp3", "Assets/Bad Piggies Theme - Ilmari Hakkola.ogg"]
+for mp in music_paths:
+    try:
+        pygame.mixer.music.load(mp)
+        music_loaded = True
+        break
+    except Exception:
+        music_loaded = False
+        continue
 
 # Screen settings
 Width = 600
@@ -134,7 +151,7 @@ def spawnEnemy():
         bosses.append([boss_x, boss_y, boss_health, 0])
         return
 
-    for row in range(rows):
+    for row in range(rows): 
         if level >= 2:
             enemies_speed += 1
             special_enemies_speed = enemies_speed
@@ -235,6 +252,23 @@ while True:
                 bullet_x = player_x + player_size // 2 - bullet_width // 2
                 bullet_y = player_y
                 bullets.append([bullet_x, bullet_y])
+
+    # Music control: play during gameplay, stop in menu or on game over
+    if music_loaded:
+        if not menu_active and not game_over:
+            if not music_playing:
+                try:
+                    pygame.mixer.music.play(-1)
+                    music_playing = True
+                except Exception:
+                    music_playing = False
+        else:
+            if music_playing:
+                try:
+                    pygame.mixer.music.stop()
+                except Exception:
+                    pass
+                music_playing = False
 
     if not game_over and not menu_active:
         # Move bullets and collide with enemies
@@ -360,13 +394,13 @@ while True:
         keys = pygame.key.get_pressed()
         dx = 0
         dy = 0
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_a]:
             dx -= 1
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_d]:
             dx += 1
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_w]:
             dy -= 1
-        if keys[pygame.K_DOWN]:
+        if keys[pygame.K_s]:
             dy += 1
 
         # Normalize diagonal movement
