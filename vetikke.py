@@ -319,7 +319,7 @@ while True:
                         bullets.remove(bullet)
                     break
 
-        # Move enemies side to side like Galaga
+        # Determine movement direction based on edge collisions
         move_left = False
         move_right = False
 
