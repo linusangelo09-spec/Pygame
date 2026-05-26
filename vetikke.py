@@ -36,7 +36,8 @@ TEXT_COLOR = (255, 255, 255)
 
 # Clock
 Clock = pygame.time.Clock()
-level = 1
+start_level = 1
+level = start_level
 game_over = False
 menu_active = True
 
@@ -102,6 +103,14 @@ special_enemies = []
 special_enemy_drop = 20
 special_enemies_health = 2
 
+# Tanky Enemies
+tanky_enemies_width = 40
+tanky_enemies_height = 25
+tanky_enemies_speed = 3
+tanky_enemies = []
+tanky_enemy_drop = 20
+tanky_enemies_health = 7
+
 # Boss Enemy
 bosses_width = 140
 bosses_height = 100
@@ -133,7 +142,7 @@ def draw_boss_health_bar(boss, surface):
 
 
 def spawnEnemy():
-    global enemies_speed, enemies_width, special_enemies_speed, special_enemies_width
+    global enemies_speed, enemies_width, special_enemies_speed, special_enemies_width, tanky_enemies_speed
 
     if level == 5 or level == 10:
         boss_x = (Width - bosses_width) // 2
@@ -144,15 +153,40 @@ def spawnEnemy():
 
     # Apply level scaling ONCE, outside the row loop
     if level >= 2:
-        enemies_speed += 1
+        enemies_speed += .4
         special_enemies_speed = enemies_speed
+        tanky_enemies_speed = enemies_speed
         enemies_width = max(10, enemies_width - 1)
         special_enemies_width = max(10, special_enemies_width - 1)
 
+    spawn_cols = cols
+    spawn_x_padding = x_padding
+    if level == 7:
+        tanky_cols = 6
+        tanky_x_spacing = tanky_enemies_width + 15
+        tanky_x_padding = (Width - ((tanky_cols - 1) * tanky_x_spacing + tanky_enemies_width)) // 2
+    elif level == 8:
+        # For level 8 we'll alternate whole columns in a local 9-column grid
+        spawn_cols = 9
+        spawn_x_padding = (Width - ((spawn_cols - 1) * x_spacing + enemies_width)) // 2
+    else:
+        tanky_cols = 6
+        tanky_x_spacing = tanky_enemies_width + 15
+        tanky_x_padding = (Width - ((tanky_cols - 1) * tanky_x_spacing + tanky_enemies_width)) // 2
+
     for row in range(rows):
-        for col in range(cols):
-            enemy_x = x_padding + col * x_spacing
+        for col in range(spawn_cols):
+            if level == 7 and row == rows - 1 and col >= tanky_cols:
+                continue
+
+            enemy_x = spawn_x_padding + col * x_spacing
             enemy_y = y_padding + row * y_spacing
+            if level == 7:
+                tan_x = tanky_x_padding + col * tanky_x_spacing
+            else:
+                tan_x = enemy_x - (tanky_enemies_width - enemies_width) // 2
+            tan_y = enemy_y + (enemies_height - tanky_enemies_height)
+
             se_x = enemy_x - (special_enemies_width - enemies_width) // 2
             se_y = enemy_y + (enemies_height - special_enemies_height)
             if level == 2 and row == rows - 1:
@@ -161,16 +195,30 @@ def spawnEnemy():
                 special_enemies.append([se_x, se_y, special_enemies_health])
             elif level == 4 and (row + col) % 2 == 0:
                 special_enemies.append([se_x, se_y, special_enemies_health])
+            elif level == 6 and (row == rows - 1 or row == 0 or row == 1):
+                special_enemies.append([se_x, se_y, special_enemies_health])
+            elif level == 7:
+                if row == rows - 1:
+                    tanky_enemies.append([tan_x, tan_y, tanky_enemies_health])
+                else:
+                    special_enemies.append([se_x, se_y, special_enemies_health])
+            elif level == 8:
+                # Full-column alternation: make entire columns tanky/special.
+                # Ensure the grid starts and ends with a tanky column.
+                if col == 0 or col == spawn_cols - 1 or col % 2 == 0:
+                    tanky_enemies.append([tan_x, tan_y, tanky_enemies_health])
+                else:
+                    special_enemies.append([se_x, se_y, special_enemies_health])
             else:
                 enemies.append([enemy_x, enemy_y, enemies_health])
 
 
 def reset_game():
-    global level, enemies_speed, special_enemies_speed, enemy_direction
+    global level, enemies_speed, special_enemies_speed, enemy_direction, start_level
     global enemies_width, enemies_height, special_enemies_width, special_enemies_height
     global boss_speed, bosses_width, player_x, player_y, game_over
 
-    level = 1
+    level = start_level
     enemies_speed = 3
     special_enemies_speed = 3
     enemy_direction = 1
@@ -186,6 +234,7 @@ def reset_game():
 
     enemies.clear()
     special_enemies.clear()
+    tanky_enemies.clear()
     bosses.clear()
     bullets.clear()
 
@@ -215,6 +264,16 @@ while True:
             if game_over:
                 if event.key == pygame.K_r:
                     reset_game()
+                continue
+
+            # Allow selecting a start level from the menu using number keys 1-9
+            if menu_active:
+                try:
+                    n = int(event.unicode)
+                    if 1 <= n <= 9:
+                        start_level = n
+                except Exception:
+                    pass
                 continue
 
             if not menu_active and event.key == pygame.K_SPACE:
@@ -257,6 +316,25 @@ while True:
                     if special_enemy[2] <= 0:
                         special_enemies.remove(special_enemy)
                         enemies_speed *= 1.02
+                        special_enemies_speed *= 1.02
+                        tanky_enemies_speed *= 1.02
+                    if bullet in bullets:
+                        bullets.remove(bullet)
+                    hit = True
+                    break
+
+            if hit:
+                continue
+
+            for tanky_enemy in tanky_enemies[:]:
+                tanky_rect = pygame.Rect(tanky_enemy[0], tanky_enemy[1], tanky_enemies_width, tanky_enemies_height)
+                if tanky_enemy[2] > 0 and bullet_rect.colliderect(tanky_rect):
+                    tanky_enemy[2] -= bullet_damage
+                    if tanky_enemy[2] <= 0:
+                        tanky_enemies.remove(tanky_enemy)
+                        enemies_speed *= 1.02
+                        special_enemies_speed *= 1.02
+                        tanky_enemies_speed *= 1.02
                     if bullet in bullets:
                         bullets.remove(bullet)
                     hit = True
@@ -272,6 +350,8 @@ while True:
                     if enemy[2] <= 0:
                         enemies.remove(enemy)
                         enemies_speed *= 1.02
+                        special_enemies_speed *= 1.02
+                        tanky_enemies_speed *= 1.02
                     if bullet in bullets:
                         bullets.remove(bullet)
                     break
@@ -304,6 +384,12 @@ while True:
             if special_enemy[0] <= 0:
                 move_right = True
 
+        for tanky_enemy in tanky_enemies:
+            if tanky_enemy[0] + tanky_enemies_width >= Width:
+                move_left = True
+            if tanky_enemy[0] <= 0:
+                move_right = True
+
         for boss in bosses:
             if boss[0] + bosses_width >= Width:
                 move_left = True
@@ -316,6 +402,8 @@ while True:
                 enemy[1] += enemy_drop
             for special_enemy in special_enemies:
                 special_enemy[1] += special_enemy_drop
+            for tanky_enemy in tanky_enemies:
+                tanky_enemy[1] += tanky_enemy_drop
             for boss in bosses:
                 boss[1] += boss_drop
 
@@ -323,7 +411,10 @@ while True:
             enemy[0] += enemies_speed * enemy_direction
 
         for special_enemy in special_enemies:
-            special_enemy[0] += enemies_speed * enemy_direction
+            special_enemy[0] += special_enemies_speed * enemy_direction
+
+        for tanky_enemy in tanky_enemies:
+            tanky_enemy[0] += tanky_enemies_speed * enemy_direction
 
         for boss in bosses:
             boss[0] += boss_speed * enemy_direction
@@ -341,13 +432,18 @@ while True:
                 game_over = True
                 break
 
+        for tanky_enemy in tanky_enemies:
+            if player_rect.colliderect(pygame.Rect(tanky_enemy[0], tanky_enemy[1], tanky_enemies_width, tanky_enemies_height)):
+                game_over = True
+                break
+
         for boss in bosses:
             if player_rect.colliderect(pygame.Rect(boss[0], boss[1], bosses_width, bosses_height)):
                 game_over = True
                 break
 
         # Level up when all enemies cleared
-        if not enemies and not special_enemies and not bosses:
+        if not enemies and not special_enemies and not tanky_enemies and not bosses:
             level += 1
             bullets.clear()
             spawnEnemy()
@@ -388,6 +484,9 @@ while True:
         screen.blit(title_text, ((Width - title_text.get_width()) // 2, 40))
         for button in buttons:
             button.draw(screen)
+        # Show selected start level
+        start_text = small_font.render("Start Level: " + str(start_level) + "  (press 1-9)", True, TEXT_COLOR)
+        screen.blit(start_text, ((Width - start_text.get_width()) // 2, 340))
     else:
         if game_over:
             game_over_text = font.render("GAME OVER", True, (255, 50, 50))
@@ -403,6 +502,9 @@ while True:
 
             for special_enemy in special_enemies:
                 pygame.draw.rect(screen, (255, 0, 0), (special_enemy[0], special_enemy[1], special_enemies_width, special_enemies_height))
+
+            for tanky_enemy in tanky_enemies:
+                pygame.draw.rect(screen, (0, 200, 0), (tanky_enemy[0], tanky_enemy[1], tanky_enemies_width, tanky_enemies_height))
 
             for boss in bosses:
                 current_color = (255, 100, 100) if boss[3] > 0 else (255, 0, 0)
