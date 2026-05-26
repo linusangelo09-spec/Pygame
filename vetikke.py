@@ -34,12 +34,15 @@ BUTTON_COLOR = (70, 130, 180)
 HOVER_COLOR = (100, 170, 220)
 TEXT_COLOR = (255, 255, 255)
 
-
 # Clock
 Clock = pygame.time.Clock()
 level = 1
 game_over = False
 menu_active = True
+
+# Fonts
+font = pygame.font.SysFont(None, 48)
+small_font = pygame.font.SysFont(None, 28)
 
 # Button class
 class Button:
@@ -51,7 +54,6 @@ class Button:
         color = HOVER_COLOR if self.rect.collidepoint(pygame.mouse.get_pos()) else BUTTON_COLOR
         pygame.draw.rect(surface, color, self.rect)
         pygame.draw.rect(surface, (0, 0, 0), self.rect, 2)
-
         text_surf = font.render(self.text, True, TEXT_COLOR)
         text_rect = text_surf.get_rect(center=self.rect.center)
         surface.blit(text_surf, text_rect)
@@ -70,15 +72,11 @@ buttons = [
     Button("Quit", 200, 260, 200, 50)
 ]
 
-#player settings
+# Player settings
 player_size = 40
 player_x = Width // 2 - player_size // 2
 player_y = height // 1.3
 speed = 5
-
-# Fonts
-font = pygame.font.SysFont(None, 48)
-small_font = pygame.font.SysFont(None, 28)
 
 # Bullets
 bullet_width = 4
@@ -101,8 +99,7 @@ special_enemies_width = 30
 special_enemies_height = 20
 special_enemies_speed = 2
 special_enemies = []
-special_enemy_direction = 1
-special_enemy_drop = 25
+special_enemy_drop = 20  # Match normal enemy drop so rows stay aligned
 special_enemies_health = 2
 
 # Boss Enemy
@@ -113,12 +110,8 @@ boss_health = 67
 boss_maxhealth = 67
 bosses = []
 boss_drop = 25
-boss_color = (255, 0, 0)
-boss_hit_timer = 0
 
-
-
-# Create enemies in a grid similar to Galaga
+# Enemy grid settings
 rows = 3
 cols = 8
 x_spacing = 40
@@ -134,15 +127,13 @@ def draw_boss_health_bar(boss, surface):
     bar_height = 8
     bar_x = boss[0]
     bar_y = boss[1] - 12
-
     pygame.draw.rect(surface, (120, 0, 0), (bar_x, bar_y, bar_width, bar_height))
-    pygame.draw.rect(surface, (0, 200, 0), (bar_x, bar_y, bar_width * ratio, bar_height))
+    pygame.draw.rect(surface, (0, 200, 0), (bar_x, bar_y, int(bar_width * ratio), bar_height))
     pygame.draw.rect(surface, (255, 255, 255), (bar_x, bar_y, bar_width, bar_height), 1)
 
+
 def spawnEnemy():
-    global enemies_speed
-    global enemies_width
-    global special_enemies_speed
+    global enemies_speed, enemies_width, special_enemies_speed, special_enemies_width
 
     if level == 5 or level == 10:
         boss_x = (Width - bosses_width) // 2
@@ -151,49 +142,57 @@ def spawnEnemy():
         bosses.append([boss_x, boss_y, boss_health, 0])
         return
 
-    for row in range(rows): 
-        if level >= 2:
-            enemies_speed += 1
-            special_enemies_speed = enemies_speed
-            enemies_width -= 1
+    # Apply level scaling ONCE, outside the row loop
+    if level >= 2:
+        enemies_speed += 1
+        special_enemies_speed = enemies_speed
+        enemies_width = max(10, enemies_width - 1)
+        special_enemies_width = max(10, special_enemies_width - 1)
 
+    for row in range(rows):
         for col in range(cols):
             enemy_x = x_padding + col * x_spacing
             enemy_y = y_padding + row * y_spacing
             if level == 2 and row == rows - 1:
-                special_enemies.append([enemy_x, enemy_y, special_enemies_health])
+                # Center special enemy horizontally; bottom-align vertically so taller sprite has same gap above
+                se_x = enemy_x - (special_enemies_width - enemies_width) // 2
+                se_y = enemy_y + (enemies_height - special_enemies_height)
+                special_enemies.append([se_x, se_y, special_enemies_health])
+            if level == 3 and (row == rows - 1 or row == 0):
+                # Center special enemy horizontally; bottom-align vertically so taller sprite has same gap above
+                se_x = enemy_x - (special_enemies_width - enemies_width) // 2
+                se_y = enemy_y + (enemies_height - special_enemies_height)
+                special_enemies.append([se_x, se_y, special_enemies_health])
             else:
                 enemies.append([enemy_x, enemy_y, enemies_health])
 
-def spawnSpecialEnemy():
-    global special_enemies_speed
-    global special_enemies_width
 
-    for row in range(rows):
-        if level >= 2:
-            special_enemies_speed += 1
-            special_enemies_width -= 1
+def reset_game():
+    global level, enemies_speed, special_enemies_speed, enemy_direction
+    global enemies_width, enemies_height, special_enemies_width, special_enemies_height
+    global boss_speed, bosses_width, player_x, player_y, game_over
 
-            
-            
-        for col in range(cols):
-            special_enemy_x = x_padding + col * x_spacing
-            special_enemy_y = y_padding + row * y_spacing
-            special_enemies.append([special_enemy_x, special_enemy_y, special_enemies_health])
+    level = 1
+    enemies_speed = 3
+    special_enemies_speed = 2
+    enemy_direction = 1
+    enemies_width = 25
+    enemies_height = 15
+    special_enemies_width = 30
+    special_enemies_height = 20
+    boss_speed = 5
+    bosses_width = 140
+    player_x = Width // 2 - player_size // 2
+    player_y = height // 1.3
+    game_over = False
 
-def spawnBoss():
-    global boss_speed
-    global boss_health
+    enemies.clear()
+    special_enemies.clear()
+    bosses.clear()
+    bullets.clear()
 
-    for row in range(rows):
-        if level == 3 or level == 10:
-            boss_speed += 1
-            bosses_width -= 1
-            
-        for col in range(cols):
-            boss_x = x_padding + col * x_spacing
-            boss_y = y_padding + row * y_spacing
-            bosses.append([boss_x, boss_y, boss_health, 0])
+    spawnEnemy()
+
 
 # Game loop
 while True:
@@ -207,20 +206,7 @@ while True:
                 if button.clicked(event):
                     if button.text == "Play":
                         menu_active = False
-                        enemies.clear()
-                        special_enemies.clear()
-                        bosses.clear()
-                        bullets.clear()
-                        level = 1
-                        enemies_speed = 3
-                        special_enemies_speed = 2
-                        enemies_width = 25
-                        enemies_height = 15
-                        special_enemies_width = 30
-                        special_enemies_height = 20
-                        boss_speed = 5
-                        bosses_width = 140
-                        spawnEnemy()
+                        reset_game()
                     elif button.text == "Options":
                         pass
                     elif button.text == "Quit":
@@ -230,22 +216,7 @@ while True:
         if event.type == pygame.KEYDOWN:
             if game_over:
                 if event.key == pygame.K_r:
-                    # Restart the game after game over
-                    level = 1
-                    enemies.clear()
-                    special_enemies.clear()
-                    bullets.clear()
-                    player_x = Width // 2 - player_size // 2
-                    player_y = height // 1.3
-                    enemies_speed = 3
-                    special_enemies_speed = 2
-                    enemy_direction = 1
-                    enemies_width = 25 
-                    enemies_height = 15
-                    special_enemies_width = 30
-                    special_enemies_height = 20
-                    game_over = False
-                    spawnEnemy()
+                    reset_game()
                 continue
 
             if not menu_active and event.key == pygame.K_SPACE:
@@ -253,7 +224,7 @@ while True:
                 bullet_y = player_y
                 bullets.append([bullet_x, bullet_y])
 
-    # Music control: play during gameplay, stop in menu or on game over
+    # Music control
     if music_loaded:
         if not menu_active and not game_over:
             if not music_playing:
@@ -271,7 +242,7 @@ while True:
                 music_playing = False
 
     if not game_over and not menu_active:
-        # Move bullets and collide with enemies
+        # Move bullets and check collisions
         for bullet in bullets[:]:
             bullet[1] -= bullet_speed
             if bullet[1] < 0:
@@ -302,11 +273,11 @@ while True:
                     enemy[2] -= bullet_damage
                     if enemy[2] <= 0:
                         enemies.remove(enemy)
-                        enemies_speed *= 1.02  # Increase speed slightly when enemy dies
+                        enemies_speed *= 1.02
                     if bullet in bullets:
                         bullets.remove(bullet)
                     break
-                    
+
             for boss in bosses[:]:
                 boss_rect = pygame.Rect(boss[0], boss[1], bosses_width, bosses_height)
                 if boss[2] > 0 and bullet_rect.colliderect(boss_rect):
@@ -314,7 +285,7 @@ while True:
                     boss[3] = 8
                     if boss[2] <= 0:
                         bosses.remove(boss)
-                        boss_speed *= 1.02  # Increase speed slightly when boss dies
+                        boss_speed *= 1.02
                     if bullet in bullets:
                         bullets.remove(bullet)
                     break
@@ -355,42 +326,40 @@ while True:
 
         for special_enemy in special_enemies:
             special_enemy[0] += enemies_speed * enemy_direction
-        
+
         for boss in bosses:
             boss[0] += boss_speed * enemy_direction
 
-        # Check for collision between enemies and player
+        # Check player collision
         player_rect = pygame.Rect(player_x, player_y, player_size, player_size)
+
         for enemy in enemies:
-            enemy_rect = pygame.Rect(enemy[0], enemy[1], enemies_width, enemies_height)
-            if player_rect.colliderect(enemy_rect):
+            if player_rect.colliderect(pygame.Rect(enemy[0], enemy[1], enemies_width, enemies_height)):
                 game_over = True
                 break
 
         for special_enemy in special_enemies:
-            special_rect = pygame.Rect(special_enemy[0], special_enemy[1], special_enemies_width, special_enemies_height)
-            if player_rect.colliderect(special_rect):
-                game_over = True
-                break
-        
-        for boss in bosses:
-            boss_rect = pygame.Rect(boss[0], boss[1], bosses_width, bosses_height)
-            if player_rect.colliderect(boss_rect):
+            if player_rect.colliderect(pygame.Rect(special_enemy[0], special_enemy[1], special_enemies_width, special_enemies_height)):
                 game_over = True
                 break
 
-        # Respawn enemies if all are destroyed
+        for boss in bosses:
+            if player_rect.colliderect(pygame.Rect(boss[0], boss[1], bosses_width, bosses_height)):
+                game_over = True
+                break
+
+        # Level up when all enemies cleared
         if not enemies and not special_enemies and not bosses:
             level += 1
             bullets.clear()
             spawnEnemy()
-        
-        # Update boss hit timers
+
+        # Update boss hit flash timers
         for boss in bosses:
             if boss[3] > 0:
                 boss[3] -= 1
 
-        # Key presses
+        # Player movement
         keys = pygame.key.get_pressed()
         dx = 0
         dy = 0
@@ -403,7 +372,6 @@ while True:
         if keys[pygame.K_s]:
             dy += 1
 
-        # Normalize diagonal movement
         if dx != 0 and dy != 0:
             dx /= math.sqrt(2)
             dy /= math.sqrt(2)
@@ -411,7 +379,6 @@ while True:
         player_x += dx * speed
         player_y += dy * speed
 
-        # Keep square on screen
         player_x = max(0, min(Width - player_size, player_x))
         player_y = max(500, min(height - player_size, player_y))
 
@@ -438,6 +405,7 @@ while True:
 
             for special_enemy in special_enemies:
                 pygame.draw.rect(screen, (255, 0, 0), (special_enemy[0], special_enemy[1], special_enemies_width, special_enemies_height))
+
             for boss in bosses:
                 current_color = (255, 100, 100) if boss[3] > 0 else (255, 0, 0)
                 pygame.draw.rect(screen, current_color, (boss[0], boss[1], bosses_width, bosses_height))
