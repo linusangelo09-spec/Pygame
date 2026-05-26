@@ -153,12 +153,7 @@ def spawnEnemy():
         for col in range(cols):
             enemy_x = x_padding + col * x_spacing
             enemy_y = y_padding + row * y_spacing
-            if level == 2 and row == rows - 1:
-                # Center special enemy horizontally; bottom-align vertically so taller sprite has same gap above
-                se_x = enemy_x - (special_enemies_width - enemies_width) // 2
-                se_y = enemy_y + (enemies_height - special_enemies_height)
-                special_enemies.append([se_x, se_y, special_enemies_health])
-            if level == 3 and (row == rows - 1 or row == 0):
+            if (level == 2 and row == rows - 1) or (level == 4 and (row + col) % 2 == 0):
                 # Center special enemy horizontally; bottom-align vertically so taller sprite has same gap above
                 se_x = enemy_x - (special_enemies_width - enemies_width) // 2
                 se_y = enemy_y + (enemies_height - special_enemies_height)
