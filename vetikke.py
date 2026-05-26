@@ -97,9 +97,9 @@ enemies_health = 1
 # Special Enemies
 special_enemies_width = 30
 special_enemies_height = 20
-special_enemies_speed = 2
+special_enemies_speed = 3
 special_enemies = []
-special_enemy_drop = 20  # Match normal enemy drop so rows stay aligned
+special_enemy_drop = 20
 special_enemies_health = 2
 
 # Boss Enemy
@@ -153,10 +153,13 @@ def spawnEnemy():
         for col in range(cols):
             enemy_x = x_padding + col * x_spacing
             enemy_y = y_padding + row * y_spacing
-            if (level == 2 and row == rows - 1) or (level == 4 and (row + col) % 2 == 0):
-                # Center special enemy horizontally; bottom-align vertically so taller sprite has same gap above
-                se_x = enemy_x - (special_enemies_width - enemies_width) // 2
-                se_y = enemy_y + (enemies_height - special_enemies_height)
+            se_x = enemy_x - (special_enemies_width - enemies_width) // 2
+            se_y = enemy_y + (enemies_height - special_enemies_height)
+            if level == 2 and row == rows - 1:
+                special_enemies.append([se_x, se_y, special_enemies_health])
+            elif level == 3 and (row == rows - 1 or row == 0):
+                special_enemies.append([se_x, se_y, special_enemies_health])
+            elif level == 4 and (row + col) % 2 == 0:
                 special_enemies.append([se_x, se_y, special_enemies_health])
             else:
                 enemies.append([enemy_x, enemy_y, enemies_health])
@@ -169,7 +172,7 @@ def reset_game():
 
     level = 1
     enemies_speed = 3
-    special_enemies_speed = 2
+    special_enemies_speed = 3
     enemy_direction = 1
     enemies_width = 25
     enemies_height = 15
