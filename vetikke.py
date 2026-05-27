@@ -172,7 +172,7 @@ def spawnEnemy():
         tanky_cols = 6
         tanky_x_spacing = tanky_enemies_width + 15
         tanky_x_padding = (Width - ((tanky_cols - 1) * tanky_x_spacing + tanky_enemies_width)) // 2
-    elif level == 8:
+    elif level == 8 or level == 9:
         # For level 8 we'll alternate whole columns in a local 9-column grid
         spawn_cols = 9
         spawn_x_padding = (Width - ((spawn_cols - 1) * x_spacing + enemies_width)) // 2
@@ -216,6 +216,8 @@ def spawnEnemy():
                     tanky_enemies.append([tan_x, tan_y, tanky_enemies_health])
                 else:
                     special_enemies.append([se_x, se_y, special_enemies_health])
+            elif level == 9 and (row + col) % 2 == 0:
+                tanky_enemies.append([tan_x, tan_y, tanky_enemies_health])
             else:
                 enemies.append([enemy_x, enemy_y, enemies_health])
 
@@ -293,6 +295,11 @@ while True:
                     reset_game()
                 continue
 
+
+            all_enemies = enemies + special_enemies + tanky_enemies + bosses
+            if any(e[1] + (bosses_height if e in bosses else enemies_height) >= height for e in all_enemies):
+                game_over = True
+                
             # Allow selecting a start level from the menu using number keys 1-9
             if menu_active:
                 try:
