@@ -299,15 +299,23 @@ while True:
             all_enemies = enemies + special_enemies + tanky_enemies + bosses
             if any(e[1] + (bosses_height if e in bosses else enemies_height) >= height for e in all_enemies):
                 game_over = True
-                
-            # Allow selecting a start level from the menu using number keys 1-9
+
+            # Allow selecting a start level from the menu using number keys 1-10 and arrow keys
             if menu_active:
-                try:
-                    n = int(event.unicode)
-                    if 1 <= n <= 9:
-                        start_level = n
-                except Exception:
-                    pass
+                # Arrow keys to change selection
+                if event.key in (pygame.K_UP, pygame.K_LEFT):
+                    start_level = max(1, start_level - 1)
+                elif event.key in (pygame.K_DOWN, pygame.K_RIGHT):
+                    start_level = min(10, start_level + 1)
+                else:
+                    try:
+                        n = int(event.unicode)
+                        if n == 0:
+                            start_level = 10
+                        elif 1 <= n <= 9:
+                            start_level = n
+                    except Exception:
+                        pass
                 continue
 
             if not menu_active and event.key == pygame.K_SPACE:
@@ -519,7 +527,7 @@ while True:
         for button in buttons:
             button.draw(screen)
         # Show selected start level
-        start_text = small_font.render("Start Level: " + str(start_level) + "  (press 1-9)", True, TEXT_COLOR)
+        start_text = small_font.render("Start Level: " + str(start_level) + "  (press 1-9 or 0 for 10, or use arrows)", True, TEXT_COLOR)
         screen.blit(start_text, ((Width - start_text.get_width()) // 2, 340))
     elif paused:
         paused_text = font.render("Paused", True, TEXT_COLOR)
