@@ -126,6 +126,16 @@ boss_health = 67
 boss_maxhealth = 67
 bosses = []
 boss_drop = 25
+boss_score = 100
+
+startscore = 0
+score = startscore
+
+
+def draw_score(surface, score):
+    score_text = small_font.render("Score: " + str(score), True, (255, 255, 255))
+    surface.blit(score_text, (Width - score_text.get_width() - 10, 10))
+
 
 # Enemy grid settings
 rows = 3
@@ -364,6 +374,25 @@ while True:
                         bullets.remove(bullet)
                     hit = True
                     break
+                # In the normal enemy hit section:
+                if enemy[2] <= 0:
+                    enemies.remove(enemy)
+                    score += 10  # normal enemy worth 10
+
+                # In the special enemy hit section:
+                if special_enemy[2] <= 0:
+                    special_enemies.remove(special_enemy)
+                    score += 25  # special worth more
+
+                # In the tanky enemy hit section:
+                if tanky_enemy[2] <= 0:
+                    tanky_enemies.remove(tanky_enemy)
+                    score += 50  # tanky worth most
+
+                # In the boss hit section:
+                if boss[2] <= 0:
+                    bosses.remove(boss)
+                    score += 200  # boss worth a lot
 
             if hit:
                 continue
