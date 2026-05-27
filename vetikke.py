@@ -40,6 +40,7 @@ start_level = 1
 level = start_level
 game_over = False
 menu_active = True
+paused = False
 
 # Fonts
 font = pygame.font.SysFont(None, 48)
@@ -69,7 +70,13 @@ class Button:
 # Create buttons
 buttons = [
     Button("Play", 200, 120, 200, 50),
-    Button("Options", 200, 190, 200, 50),
+    Button("Menu", 200, 190, 200, 50),
+    Button("Quit", 200, 260, 200, 50)
+]
+
+buttonesc = [
+    Button("Continue", 200, 120, 200, 50),
+    Button("Menu", 200, 190, 200, 50),
     Button("Quit", 200, 260, 200, 50)
 ]
 
@@ -253,14 +260,34 @@ while True:
                 if button.clicked(event):
                     if button.text == "Play":
                         menu_active = False
+                        paused = False
                         reset_game()
-                    elif button.text == "Options":
+                    elif button.text == "Menu":
                         pass
+                    elif button.text == "Quit":
+                        pygame.quit()
+                        sys.exit()
+        elif paused:
+            for button in buttonesc:
+                if button.clicked(event):
+                    if button.text == "Continue":
+                        paused = False
+                    elif button.text == "Menu":
+                        paused = False
+                        menu_active = True
                     elif button.text == "Quit":
                         pygame.quit()
                         sys.exit()
 
         if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                if not menu_active and not game_over:
+                    paused = not paused
+                continue
+
+            if paused:
+                continue
+
             if game_over:
                 if event.key == pygame.K_r:
                     reset_game()
@@ -283,7 +310,7 @@ while True:
 
     # Music control
     if music_loaded:
-        if not menu_active and not game_over:
+        if not menu_active and not game_over and not paused:
             if not music_playing:
                 try:
                     pygame.mixer.music.play(-1)
@@ -298,7 +325,7 @@ while True:
                     pass
                 music_playing = False
 
-    if not game_over and not menu_active:
+    if not game_over and not menu_active and not paused:
         # Move bullets and check collisions
         for bullet in bullets[:]:
             bullet[1] -= bullet_speed
@@ -487,6 +514,13 @@ while True:
         # Show selected start level
         start_text = small_font.render("Start Level: " + str(start_level) + "  (press 1-9)", True, TEXT_COLOR)
         screen.blit(start_text, ((Width - start_text.get_width()) // 2, 340))
+    elif paused:
+        paused_text = font.render("Paused", True, TEXT_COLOR)
+        screen.blit(paused_text, ((Width - paused_text.get_width()) // 2, 40))
+        for button in buttonesc:
+            button.draw(screen)
+        resume_text = small_font.render("Press ESC to continue", True, TEXT_COLOR)
+        screen.blit(resume_text, ((Width - resume_text.get_width()) // 2, 340))
     else:
         if game_over:
             game_over_text = font.render("GAME OVER", True, (255, 50, 50))
