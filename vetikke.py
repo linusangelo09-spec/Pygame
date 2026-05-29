@@ -586,6 +586,18 @@ while True:
         if keys[pygame.K_s]:
             dy += 1
 
+        keys = pygame.key.get_pressed()
+        dx = 0
+        dy = 0
+        if keys[pygame.K_LEFT]:
+            dx -= 1
+        if keys[pygame.K_RIGHT]:
+            dx += 1
+        if keys[pygame.K_UP]:
+            dy -= 1
+        if keys[pygame.K_DOWN]:
+            dy += 1
+
         if dx != 0 and dy != 0:
             dx /= math.sqrt(2)
             dy /= math.sqrt(2)
