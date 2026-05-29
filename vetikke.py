@@ -438,9 +438,9 @@ while True:
                     if tanky_enemy[2] <= 0:
                         tanky_enemies.remove(tanky_enemy)
                         score += tanky_enemies_score
-                        enemies_speed *= 1.02
-                        special_enemies_speed *= 1.02
-                        tanky_enemies_speed *= 1.02
+                        enemies_speed *= 1.008
+                        special_enemies_speed *= 1.008
+                        tanky_enemies_speed *= 1.008
                     bullets.remove(bullet)
                     hit = True
                     break
@@ -453,9 +453,9 @@ while True:
                     if enemy[2] <= 0:
                         enemies.remove(enemy)
                         score += enemies_score
-                        enemies_speed *= 1.02
-                        special_enemies_speed *= 1.02
-                        tanky_enemies_speed *= 1.02
+                        enemies_speed *= 1.008
+                        special_enemies_speed *= 1.008
+                        tanky_enemies_speed *= 1.008
                     bullets.remove(bullet)
                     hit = True
                     break
