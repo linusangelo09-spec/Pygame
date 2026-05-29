@@ -163,7 +163,7 @@ def draw_player_health_bar(surface):
 
 
 def spawnEnemy():
-    global enemies_speed, enemies_width, special_enemies_speed, special_enemies_width, tanky_enemies_speed, player_health
+    global enemies_speed, enemies_width, special_enemies_speed, special_enemies_width, tanky_enemies_speed, player_health, bullet_damage
 
     # boss levels
     if level == 5 or level == 10:
@@ -171,6 +171,17 @@ def spawnEnemy():
         bosses.append([(Width - bosses_width) // 2, y_padding, boss_health, 0, 0])  # Added shoot timer (0)
         player_health = player_max_health
         return
+    
+    if level == 6:
+        enemies_speed = 3
+        special_enemies_speed = 3
+        tanky_enemies_speed = 3
+
+    if level == 8 or level == 9:
+        bullet_damage = 2
+        enemies_speed = 4
+        special_enemies_speed = 4
+        tanky_enemies_speed = 4
 
     # speed and size scaling each level
     if level >= 2:
@@ -369,9 +380,9 @@ while True:
                     if special_enemy[2] <= 0:
                         special_enemies.remove(special_enemy)
                         score += special_enemies_score
-                        enemies_speed *= 1.02
-                        special_enemies_speed *= 1.02
-                        tanky_enemies_speed *= 1.02
+                        enemies_speed *= 1.008
+                        special_enemies_speed *= 1.008
+                        tanky_enemies_speed *= 1.008
                     bullets.remove(bullet)
                     hit = True
                     break
