@@ -12,6 +12,7 @@ except Exception:
 
 music_loaded = False
 music_playing = False
+music_muted = False
 for mp in ["Assets/Bad Piggies Theme - Ilmari Hakkola.mp3", "Assets/Bad Piggies Theme - Ilmari Hakkola.ogg"]:
     try:
         pygame.mixer.music.load(mp)
@@ -139,6 +140,8 @@ buttonesc = [
     Button("Menu", 200, 190, 200, 50),
     Button("Quit", 200, 260, 200, 50)
 ]
+
+mute_button = Button("Mute", Width - 110, 10, 100, 35)
 
 # player
 player_x = Width // 2 - player_size // 2
@@ -361,6 +364,10 @@ while True:
             pygame.quit()
             sys.exit()
 
+        if mute_button.clicked(event):
+            music_muted = not music_muted
+            pygame.mixer.music.set_volume(0 if music_muted else 1)
+
         if menu_active:
             for button in buttons:
                 if button.clicked(event):
@@ -423,6 +430,7 @@ while True:
             if not music_playing:
                 try:
                     pygame.mixer.music.play(-1)
+                    pygame.mixer.music.set_volume(0 if music_muted else 1)
                     music_playing = True
                 except Exception:
                     music_playing = False
@@ -697,6 +705,9 @@ while True:
 
         if bosses:
             draw_player_health_bar(screen)
+
+    mute_button.text = "Unmute" if music_muted else "Mute"
+    mute_button.draw(screen)
 
     pygame.display.flip()
     Clock.tick(60)
