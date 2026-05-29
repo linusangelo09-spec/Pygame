@@ -1,4 +1,5 @@
 import pygame
+import random
 import sys
 import math
 import os
@@ -39,6 +40,22 @@ game_over = False
 menu_active = True
 paused = False
 score = 0
+
+star_time = 0.0
+NUM_STARS = 80
+stars = [
+    {
+    "x": random.randint(0, Width - 1),
+    "y": random.randint(0, height - 1),
+    "size": random.choice([1, 1, 1, 2]),
+    "brightness": random.randint(100, 255),
+    "twinkle_speed": random.uniform(0.5, 2.5),
+    "twinkle_offset": random.uniform(0, math.pi * 2),
+    }
+    for _ in range(NUM_STARS)
+]
+
+
 
 
 def load_sprite(path, w, h):
@@ -209,6 +226,19 @@ def draw_player_health_bar(surface):
     health_text = small_font.render(f"Health: {player_health}/{player_max_health}", True, (255, 255, 255))
     surface.blit(health_text, (bar_x + 5, bar_y + 2))
 
+def draw_stars(surface, t):
+    for star in stars:
+        brightness = int(
+            star["brightness"] * 0.5
+            + star["brightness"] * 0.5
+            * math.sin(t * star["twinkle_speed"] + star["twinkle_offset"])
+        )
+        brightness = max(40, min(255, brightness))
+        color = (brightness, brightness, brightness)
+        if star["size"] == 1:
+            surface.set_at((star["x"], star["y"]), color)
+        else:
+            pygame.draw.rect(surface, color, (star["x"], star["y"], 2, 2))
 
 def spawnEnemy():
     global enemies_speed, enemies_width, special_enemies_speed, special_enemies_width
@@ -599,6 +629,8 @@ while True:
         player_y = max(500, min(height - player_size, player_y))
 
     screen.fill((10, 10, 30))
+    star_time += 0.05
+    draw_stars(screen, star_time)
 
     if menu_active:
         title_text = font.render("SpaceShooters", True, TEXT_COLOR)
