@@ -56,7 +56,7 @@ bosses_height = 100
 player_img = load_sprite("Assets/player.png", player_size, player_size)
 boss_img = load_sprite("Assets/boss.png", bosses_width, bosses_height)
 
-
+#--------------------------AI----------------------------
 def draw_enemy_sprite(surface, x, y, w, h, kind, flash=False):
     if kind == 'normal':
         body_color = (255, 255, 255) if flash else (220, 200, 0)
@@ -88,6 +88,8 @@ def draw_enemy_sprite(surface, x, y, w, h, kind, flash=False):
         pygame.draw.circle(surface, eye_color, (x + 2 * w // 3, y + h // 2), max(2, h // 8))
         pygame.draw.rect(surface, shell_color, (x + w // 3, y, w // 8, h // 5))
         pygame.draw.rect(surface, shell_color, (x + w // 2, y, w // 8, h // 5))
+
+#--------------------------------------ai--------------------
 
 
 class Button:
